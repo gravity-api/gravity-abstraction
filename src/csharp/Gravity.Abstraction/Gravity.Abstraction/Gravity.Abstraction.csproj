@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>    
+    <PackageId>Gravity.Abstraction</PackageId>
+    <LangVersion>latest</LangVersion>
+    <Title>Gravity API - Web Driver Abstraction</Title>
+    <Authors>Gravity-API Community</Authors>
+    <Description>Gravity API, Web Driver abstraction. Allows to create any type and or combination of Web Driver, using a simple API abstraction which can also be send over HTTP.</Description>
+    <PackageTags>automation,crawling,crawl,selenium,appium,automation testing,automation test,qa,gravity,gravity api,scrapping,scrap</PackageTags>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/gravity-api/gravity-abstraction</PackageProjectUrl>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="4.1.1" />
+    <PackageReference Include="Gravity.Drivers.Mock" Version="2020.2.2.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+  </ItemGroup>
+</Project>
