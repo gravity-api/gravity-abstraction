@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <TestRunParameters>
-    <Parameter name="Grid.Endpoint" value="https://gravityapi1:YBLjEb56poJnDEYEK9zk@hub-cloud.browserstack.com/wd/hub" />
+    <Parameter name="Grid.Endpoint" value="http://localhost:4444/wd/hub" />
     <Parameter name="Build.Number" value="development" />
     <Parameter name="Project.Name" value="Gravity API - Web Driver Abstraction" />
-  </TestRunParameters>  
+  </TestRunParameters>
+  <MSTest>
+    <Parallelize>
+      <Workers>5</Workers>
+      <Scope>MethodLevel</Scope>
+    </Parallelize>
+  </MSTest>  
 </RunSettings>
