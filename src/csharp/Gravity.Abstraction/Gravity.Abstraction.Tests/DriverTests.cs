@@ -1,5 +1,6 @@
 ﻿using Gravity.Abstraction.WebDriver;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Reflection;
 
 namespace Gravity.Abstraction.Tests
 {
@@ -16,7 +17,12 @@ namespace Gravity.Abstraction.Tests
                 "{" +
                 "    'driver':'RemoteWebDriver'," +
                 "    'remoteDriver':'ChromeDriver'," +
-                "    'driverBinaries':'" + TestContext.Properties["gridEndpoint"] + "'" +
+                "    'driverBinaries':'" + TestContext.Properties["Grid.Endpoint"] + "'," +
+                "    'capabilities': {" +
+                "        'project': '" + TestContext.Properties["Project.Name"] + "'," +
+                "        'build': '" + TestContext.Properties["Build.Number"] + "'," +
+                "        'name': '" + MethodBase.GetCurrentMethod().Name + "'" +
+                "    }" +
                 "}";
 
             // execute
