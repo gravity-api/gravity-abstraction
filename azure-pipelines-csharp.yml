@@ -25,12 +25,17 @@ steps:
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
+- powershell: |
+   [xml]$doc = Get-Content azure-settings.runsettings
+   $doc.RunSettings.TestRunParameters.ChildNodes.Item(0).value = '$(gridEndpoint)'
+   $doc.Save("azure-settings-prod.runsettings")
+
 - task: DotNetCoreCLI@2
   displayName: execute automated testing
   inputs:
     command: 'test'
     projects: '**/*[Tt]ests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    arguments: '--configuration $(buildConfiguration) -s azure-settings-prod.runsettings'
     testRunTitle: 'Automation Testing --- $(Build.BuildNumber)'
 
 - task: DotNetCoreCLI@2
