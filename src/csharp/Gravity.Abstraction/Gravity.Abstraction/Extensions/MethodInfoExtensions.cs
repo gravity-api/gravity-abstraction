@@ -26,20 +26,19 @@ namespace Gravity.Abstraction.Extensions
         /// </summary>
         /// <param name="method">method information to assert</param>
         /// <param name="driver">driver name</param>
-        /// <param name="remoteDriver">remote driver name</param>
+        /// <param name="isRemote">remote driver name</param>
         /// <returns>true if match; false if not</returns>
-        public static bool DriverMatch(this MethodInfo method, string driver, string remoteDriver)
+        public static bool DriverMatch(this MethodInfo method, string driver, bool isRemote)
         {
             // normalize arguments
             driver ??= string.Empty;
-            remoteDriver ??= string.Empty;
 
             // get attribute
             var attribute = method.GetCustomAttribute<DriverMethodAttribute>();
 
             // setup conditions
             var isDriver = attribute?.Driver == driver;
-            var isRemoteDriver = attribute?.RemoteDriver == remoteDriver;
+            var isRemoteDriver = attribute?.RemoteDriver == isRemote;
 
             // assert
             return isDriver && isRemoteDriver;

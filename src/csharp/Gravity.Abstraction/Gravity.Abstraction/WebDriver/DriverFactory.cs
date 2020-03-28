@@ -21,6 +21,7 @@ using Gravity.Abstraction.Contracts;
 using Gravity.Abstraction.Interfaces;
 using Gravity.Abstraction.Attributes;
 using Gravity.Abstraction.Extensions;
+using System.Text.RegularExpressions;
 
 namespace Gravity.Abstraction.WebDriver
 {
@@ -29,7 +30,7 @@ namespace Gravity.Abstraction.WebDriver
         // constants
         private const BindingFlags BINDING = BindingFlags.Instance | BindingFlags.NonPublic;
 
-        private const string FTL2 = "initialize method for [{0};{1}] driver was not found. " +
+        private const string FTL2 = "initialize method for [driver={0}; remote={1}] driver was not found. " +
             "please make sure that you have provided a correct driver-parameters";
 
         // members: state
@@ -75,11 +76,13 @@ namespace Gravity.Abstraction.WebDriver
         {
             // get driver information
             var driver = $"{driverToken}";
-            var remoteDriver = $"{remoteDriverToken}";
             var driverBinaries = $"{driverBinariesToken}";
 
+            // setup conditions
+            var isRemote = Regex.IsMatch(input: driverBinaries, pattern: "^(http(s)?)://");
+
             // get method
-            var method = GetMethod(driver, remoteDriver);
+            var method = GetMethod(driver, isRemote);
 
             // generate driver
             return (IWebDriver)method.Invoke(this, new object[] { driverBinaries });
@@ -176,18 +179,18 @@ namespace Gravity.Abstraction.WebDriver
         }
 
         // get web-driver method
-        private MethodInfo GetMethod(string driver, string remoteDriver)
+        private MethodInfo GetMethod(string driver, bool isRemote)
         {
             // collect all methods
             var methods = GetType().GetMethods(BINDING).Where(m => m.IsDriverMethod());
 
             // get method
-            var method = methods.FirstOrDefault(m => m.DriverMatch(driver, remoteDriver));
+            var method = methods.FirstOrDefault(m => m.DriverMatch(driver, isRemote));
 
             // exit conditions
             if (method == null)
             {
-                var message = string.Format(FTL2, driver, remoteDriver);
+                var message = string.Format(FTL2, driver, isRemote);
                 Trace.TraceError(message);
                 throw new MethodAccessException(message);
             }
@@ -262,43 +265,43 @@ namespace Gravity.Abstraction.WebDriver
         }
 
         // REMOTE WEB DRIVERS (Appium included)
-        [DriverMethod(Driver = Driver.Remote, RemoteDriver = Driver.Chrome)]
+        [DriverMethod(Driver = Driver.Chrome, RemoteDriver = true)]
         private IWebDriver GetRemoteChrome(string driverBinaries)
         {
             return GetRemote<ChromeOptions, ChromeOptionsParams>(driverBinaries);
         }
 
-        [DriverMethod(Driver = Driver.Remote, RemoteDriver = Driver.Firefox)]
+        [DriverMethod(Driver = Driver.Firefox, RemoteDriver = true)]
         private IWebDriver GetRemoteFirefox(string driverBinaries)
         {
             return GetRemote<FirefoxOptions, FirefoxOptionsParams>(driverBinaries);
         }
 
-        [DriverMethod(Driver = Driver.Remote, RemoteDriver = Driver.InternetExplorer)]
+        [DriverMethod(Driver = Driver.InternetExplorer, RemoteDriver = true)]
         private IWebDriver GetRemoteInternetExplorer(string driverBinaries)
         {
             return GetRemote<InternetExplorerOptions, InternetExplorerOptionsParams>(driverBinaries);
         }
 
-        [DriverMethod(Driver = Driver.Remote, RemoteDriver = Driver.Edge)]
+        [DriverMethod(Driver = Driver.Edge, RemoteDriver = true)]
         private IWebDriver GetRemoteEdge(string driverBinaries)
         {
             return GetRemote<EdgeOptions, EdgeOptionsParams>(driverBinaries);
         }
 
-        [DriverMethod(Driver = Driver.Android)]
+        [DriverMethod(Driver = Driver.Android, RemoteDriver = true)]
         private IWebDriver GetRemoteAndroid(string driverBinaries)
         {
             return GetMobile<AppiumOptions, AppiumOptionsParams, AndroidDriver<IWebElement>>(driverBinaries, "Android");
         }
 
-        [DriverMethod(Driver = Driver.iOS)]
+        [DriverMethod(Driver = Driver.iOS, RemoteDriver = true)]
         private IWebDriver GetRemoteIos(string driverBinaries)
         {
             return GetMobile<AppiumOptions, AppiumOptionsParams, IOSDriver<IWebElement>>(driverBinaries, "iOS");
         }
 
-        [DriverMethod(Driver = Driver.Remote, RemoteDriver = Driver.Safari)]
+        [DriverMethod(Driver = Driver.Safari, RemoteDriver = true)]
         private IWebDriver GetRemoteSafari(string driverBinaries)
         {
             return GetRemote<SafariOptions, SafariOptionsParams>(driverBinaries);

@@ -10,22 +10,22 @@ using System;
 namespace Gravity.Abstraction.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    internal class DriverMethodAttribute : Attribute
+    internal sealed class DriverMethodAttribute : Attribute
     {
         public DriverMethodAttribute()
         {
             Driver = string.Empty;
-            RemoteDriver = string.Empty;
+            RemoteDriver = false;
         }
 
         /// <summary>
-        /// gets or set the driver type
+        /// Get or sets the driver type based on <see cref="Contracts.Driver"/>.
         /// </summary>
         public string Driver { get; set; }
 
         /// <summary>
-        /// gets or sets the driver type under the context of RemoteWebDriver
+        /// Gets or sets value indicating if this is a remote (using Grid) or local driver.
         /// </summary>
-        public string RemoteDriver { get; set; }
+        public bool RemoteDriver { get; set; }
     }
 }
