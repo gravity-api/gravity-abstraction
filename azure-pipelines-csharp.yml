@@ -6,7 +6,9 @@ pool:
   name: Default
 
 variables:
-  buildConfiguration: 'Release'
+- group: browserstack.com
+- name: 'buildConfiguration'
+  value: 'Release'
 
 steps:
 - task: DotNetCoreCLI@2
