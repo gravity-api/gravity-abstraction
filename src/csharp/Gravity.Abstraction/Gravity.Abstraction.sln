@@ -5,12 +5,13 @@ VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gravity.Abstraction", "Gravity.Abstraction\Gravity.Abstraction.csproj", "{503FFCDA-C9A5-4060-AB8D-A8FC7B4A5406}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gravity.Abstraction.Tests", "Gravity.Abstraction.Tests\Gravity.Abstraction.Tests.csproj", "{4AF24DE7-7ABA-4ED9-968A-F11BE60C6C90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gravity.Abstraction.Tests", "Gravity.Abstraction.Tests\Gravity.Abstraction.Tests.csproj", "{4AF24DE7-7ABA-4ED9-968A-F11BE60C6C90}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D1117F4B-0BBC-40CF-9224-C1CAD044F269}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\azure-pipelines-csharp.yml = ..\..\..\azure-pipelines-csharp.yml
 		..\..\..\azure-settings.runsettings = ..\..\..\azure-settings.runsettings
+		..\..\..\README.md = ..\..\..\README.md
 	EndProjectSection
 EndProject
 Global
