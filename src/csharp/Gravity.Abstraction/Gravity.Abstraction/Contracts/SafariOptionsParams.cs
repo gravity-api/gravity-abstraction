@@ -23,7 +23,7 @@ namespace Gravity.Abstraction.Contracts
 
         /// <summary>
         /// Gets or sets a value indicating whether to have the driver preload the Web Inspector
-        /// and start a timeline recording in the background.
+        /// and start a time line recording in the background.
         /// </summary>
         [DataMember]
         public bool EnableAutomaticProfiling { get; set; }
@@ -35,9 +35,9 @@ namespace Gravity.Abstraction.Contracts
         public bool IsTechnologyPreview { get; set; }
 
         /// <summary>
-        /// Generate driver options for the current driver based of the params object
+        /// Generate driver options for the current driver based of the parameters object.
         /// </summary>
-        /// <returns>Safari driver options</returns>
+        /// <returns>Safari driver options.</returns>
         public SafariOptions ToDriverOptions() => new SafariOptions
         {
             EnableAutomaticInspection = EnableAutomaticInspection,

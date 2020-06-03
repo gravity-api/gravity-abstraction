@@ -36,10 +36,8 @@ namespace Gravity.Abstraction.WebDriver
         // members: state
         private readonly string driverParams;
         private readonly JToken driverToken;
-        private readonly JToken remoteDriverToken;
         private readonly JToken driverBinariesToken;
         private readonly JToken optionsToken;
-        private readonly JToken capabilitiesToken;
         private readonly JToken serviceToken;
         private readonly Dictionary<string, object> capabilities;
 
@@ -55,13 +53,12 @@ namespace Gravity.Abstraction.WebDriver
             // publish tokens
             var paramsToken = JToken.Parse(driverParams);
             driverToken = paramsToken.ByName("driver")?.FirstOrDefault()?.First;
-            remoteDriverToken = paramsToken.ByName("remoteDriver")?.FirstOrDefault()?.First;
             driverBinariesToken = paramsToken.ByName("driverBinaries")?.FirstOrDefault()?.First;
-            capabilitiesToken = paramsToken.ByName("capabilities")?.FirstOrDefault()?.First;
             optionsToken = paramsToken.ByName("options")?.FirstOrDefault()?.First;
             serviceToken = paramsToken.ByName("service")?.FirstOrDefault()?.First;
 
             // populate capabilities
+            var capabilitiesToken = paramsToken.ByName("capabilities")?.FirstOrDefault()?.First;
             capabilities = capabilitiesToken == null
                 ? new Dictionary<string, object>()
                 : capabilitiesToken.ToObject<Dictionary<string, object>>();
@@ -123,7 +120,7 @@ namespace Gravity.Abstraction.WebDriver
             where TParams : DriverServiceParams, IServiceable<TService>
         {
             // null validation
-            if (serviceToken == null || !serviceToken.Any())
+            if (serviceToken?.Any() != true)
             {
                 return default;
             }
@@ -147,7 +144,7 @@ namespace Gravity.Abstraction.WebDriver
                 .GetType()
                 .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance) == null;
 
-            Dictionary<string, object> cap = null;
+            Dictionary<string, object> cap;
             if (isFieldNull)
             {
                 cap = (Dictionary<string, object>)options
@@ -164,13 +161,13 @@ namespace Gravity.Abstraction.WebDriver
                     .GetValue(options);
             }
 
-            // exit condiions
-            if(cap == null)
+            // exit conditions
+            if (cap == null || rawCapabilities == null)
             {
                 return options;
             }
 
-            // add capabilites
+            // add capabilities
             foreach (var item in rawCapabilities)
             {
                 cap[item.Key] = item.Value;
