@@ -61,7 +61,7 @@ namespace Gravity.Abstraction.WebDriver
             var capabilitiesToken = paramsToken.ByName("capabilities")?.FirstOrDefault()?.First;
             capabilities = capabilitiesToken == null
                 ? new Dictionary<string, object>()
-                : capabilitiesToken.ToObject<Dictionary<string, object>>();
+                : JsonConvert.DeserializeObject<Dictionary<string, object>>($"{capabilitiesToken}");
         }
 
         #region *** create driver factory                ***

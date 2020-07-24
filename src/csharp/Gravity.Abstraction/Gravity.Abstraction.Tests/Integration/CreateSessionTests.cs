@@ -1,6 +1,9 @@
 ﻿using Gravity.Abstraction.Tests.Base;
+using Gravity.Abstraction.WebDriver;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 using System.Reflection;
 
 namespace Gravity.Abstraction.Tests.Integration
