@@ -1,7 +1,10 @@
-﻿using OpenQA.Selenium.Mock;
-using Gravity.Services.DataContracts;
+﻿using Gravity.Services.DataContracts;
+
+using OpenQA.Selenium.Mock;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
@@ -12,16 +15,18 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Safari;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+
 using Gravity.Abstraction.Contracts;
 using Gravity.Abstraction.Interfaces;
 using Gravity.Abstraction.Attributes;
 using Gravity.Abstraction.Extensions;
-using System.Text.RegularExpressions;
 
 namespace Gravity.Abstraction.WebDriver
 {
@@ -35,6 +40,7 @@ namespace Gravity.Abstraction.WebDriver
 
         // members: state
         private readonly string driverParams;
+        private readonly int commandTimeout;
         private readonly JToken driverToken;
         private readonly JToken driverBinariesToken;
         private readonly JToken optionsToken;
@@ -52,12 +58,14 @@ namespace Gravity.Abstraction.WebDriver
 
             // publish tokens
             var paramsToken = JToken.Parse(driverParams);
+            var timeout = paramsToken.ByName("commandTimeout")?.FirstOrDefault()?.First;
             driverToken = paramsToken.ByName("driver")?.FirstOrDefault()?.First;
             driverBinariesToken = paramsToken.ByName("driverBinaries")?.FirstOrDefault()?.First;
             optionsToken = paramsToken.ByName("options")?.FirstOrDefault()?.First;
             serviceToken = paramsToken.ByName("service")?.FirstOrDefault()?.First;
 
             // populate capabilities
+            _ = int.TryParse($"{timeout}", out commandTimeout);
             var capabilitiesToken = paramsToken.ByName("capabilities")?.FirstOrDefault()?.First;
             capabilities = capabilitiesToken == null
                 ? new Dictionary<string, object>()
@@ -348,7 +356,9 @@ namespace Gravity.Abstraction.WebDriver
             var cap = GetCapabilities(options, capabilities);
 
             // factor web driver
-            return new RemoteWebDriver(new Uri(driverBinaries), cap);
+            return commandTimeout == 0
+                ? new RemoteWebDriver(new Uri(driverBinaries), cap)
+                : new RemoteWebDriver(new Uri(driverBinaries), cap, TimeSpan.FromSeconds(commandTimeout));
         }
 
         // Gets remote mobile web driver instance
@@ -361,8 +371,12 @@ namespace Gravity.Abstraction.WebDriver
             var options = GetOptions<TOptions, TParams>(platformName);
             GetCapabilities(options, capabilities);
 
+            var arguments = commandTimeout == 0
+                ? new object[] { new Uri(driverBinaries), options }
+                : new object[] { new Uri(driverBinaries), options, TimeSpan.FromSeconds(commandTimeout) };
+
             // factor web driver
-            return (IWebDriver)Activator.CreateInstance(typeof(TDriver), new object[] { new Uri(driverBinaries), options });
+            return (IWebDriver)Activator.CreateInstance(typeof(TDriver), arguments);
         }
     }
 }

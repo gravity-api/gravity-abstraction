@@ -37,6 +37,13 @@ namespace Gravity.Abstraction.Contracts
         public int PageLoadTimeout { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum amount of time to wait for each command (in seconds).
+        /// </summary>
+        /// <remarks>Affects remote web drivers only (e.g. Appium, Grid or 3rd party).</remarks>
+        [DataMember]
+        public int CommandTimeout { get; set; }
+
+        /// <summary>
         /// WebDriver capabilities are used to communicate the features supported by a given implementation or vendor.
         /// </summary>
         [DataMember]
