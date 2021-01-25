@@ -10,7 +10,7 @@ using System;
 namespace Gravity.Abstraction.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    internal sealed class DriverMethodAttribute : Attribute
+    public sealed class DriverMethodAttribute : Attribute
     {
         public DriverMethodAttribute()
         {
