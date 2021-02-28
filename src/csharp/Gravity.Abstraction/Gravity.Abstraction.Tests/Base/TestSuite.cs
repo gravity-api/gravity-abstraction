@@ -1,7 +1,7 @@
 ﻿using Gravity.Abstraction.Contracts;
 using Gravity.Abstraction.WebDriver;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+
 using Newtonsoft.Json.Serialization;
 using OpenQA.Selenium.Remote;
 using System.Net.Http;

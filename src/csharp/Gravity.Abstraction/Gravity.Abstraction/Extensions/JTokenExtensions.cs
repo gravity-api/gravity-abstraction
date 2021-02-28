@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,11 +45,92 @@ namespace Gravity.Abstraction.Extensions
             return JToken.Parse(json);
         }
 
+        /// <summary>
+        /// Gets a value for a dictionary, or default value if not found.
+        /// </summary>
+        /// <typeparam name="T">The type of the returned value.</typeparam>
+        /// <param name="dictionary">The dictionary to get from.</param>
+        /// <param name="key">The key to get by.</param>
+        /// <param name="defaultValue">The default value to return.</param>
+        /// <returns>A value from the dictionary, or default value if not found.</returns>
+        public static T Get<T>(this IDictionary<string, object> dictionary, string key, T defaultValue)
+        {
+            try
+            {
+                return dictionary.ContainsKey(key) ? (T)dictionary[key] : defaultValue;
+            }
+            catch (Exception e) when (e != null)
+            {
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value for a dictionary, or default value if not found.
+        /// </summary>
+        /// <typeparam name="T">The type of the returned value.</typeparam>
+        /// <param name="dictionary">The dictionary to get from.</param>
+        /// <param name="path">JSON path to find by.</param>
+        /// <param name="defaultValue">The default value to return.</param>
+        /// <returns>A value from the dictionary, or default value if not found.</returns>
+        public static T Find<T>(this IDictionary<string, object> dictionary, string path, T defaultValue)
+        {
+            try
+            {
+                // setup
+                var json = System.Text.Json.JsonSerializer.Serialize(dictionary, GetJsonOptions());
+                var token = JToken.Parse(json);
+
+                // build
+                var value = token.SelectToken(path);
+
+                // exit conditions
+                if (value == null)
+                {
+                    return defaultValue;
+                }
+
+                // setup
+                json = $"{value}";
+                return System.Text.Json.JsonSerializer.Deserialize<T>(json, GetJsonOptions());
+            }
+            catch (Exception e) when (e != null)
+            {
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Transforms a dictionary into an object.
+        /// </summary>
+        /// <typeparam name="T">The type to transform into.</typeparam>
+        /// <param name="dictionary">The dictionary to transform.</param>
+        /// <returns>A new object type.</returns>
+        public static T Transform<T>(this IDictionary<string, object> dictionary)
+        {
+            // setup
+            var json = System.Text.Json.JsonSerializer.Serialize(dictionary, GetJsonOptions());
+
+            // get
+            return System.Text.Json.JsonSerializer.Deserialize<T>(json, GetJsonOptions());
+        }
+
         // gets the JSON response settings and formatting
         private static JsonSerializerSettings GetJsonSettings() => new JsonSerializerSettings
         {
-            Formatting = Formatting.Indented,
+            Formatting = Formatting.None,
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
+
+        // gets the JSON response options and formatting
+        private static System.Text.Json.JsonSerializerOptions GetJsonOptions()
+        {
+            return new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            };
+        }
     }
 }

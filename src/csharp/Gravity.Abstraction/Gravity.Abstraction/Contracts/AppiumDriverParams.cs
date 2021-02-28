@@ -3,7 +3,7 @@
  * 
  * 2019-01-06
  *    - modify: driver type is now string
- *    - modify: add xml comments
+ *    - modify: add XML comments
  *    - modify: name-space simplified
  */
 using System.Runtime.Serialization;
@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 namespace Gravity.Abstraction.Contracts
 {
     /// <summary>
-    /// describes a contract for sending gravity appium-driver-params to gravity-service
+    /// Describes a contract for sending gravity AppiumDriverParams to GravityService
     /// </summary>
     [DataContract]
     public class AppiumDriverParams : DriverParams<AppiumOptionsParams, AppiumServiceParams>

@@ -2,14 +2,12 @@
  * CHANGE LOG
  * 
  * 2019-01-06
- *    - modify: add xml comments
+ *    - modify: add XML comments
  */
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using OpenQA.Selenium;
 
 namespace Gravity.Abstraction.Contracts
@@ -44,7 +42,7 @@ namespace Gravity.Abstraction.Contracts
         /// in the browser. defaults to OpenQA.Selenium.UnhandledPromptBehavior.Default
         /// </summary>
         [DataMember]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public UnhandledPromptBehavior UnhandledPromptBehavior { get; set; }
 
         /// <summary>
@@ -52,7 +50,7 @@ namespace Gravity.Abstraction.Contracts
         /// load in the browser. defaults to OpenQA.Selenium.PageLoadStrategy.Default
         /// </summary>
         [DataMember]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public PageLoadStrategy PageLoadStrategy { get; set; }
 
         /// <summary>
@@ -116,37 +114,37 @@ namespace Gravity.Abstraction.Contracts
             }
         }
 
-        // load option: browser-version
+        // load option: BrowserVersion
         private void LoadBrowserVersion(DriverOptions driverOptions)
         {
             driverOptions.BrowserVersion = BrowserVersion;
         }
 
-        // load option: platform-name
+        // load option: PlatformName
         private void LoadPlatformName(DriverOptions driverOptions)
         {
             driverOptions.PlatformName = PlatformName;
         }
 
-        // load option: accept-insecure-certificates
+        // load option: AcceptInsecureCertificates
         private void LoadAcceptInsecureCertificates(DriverOptions driverOptions)
         {
             driverOptions.AcceptInsecureCertificates = AcceptInsecureCertificates;
         }
 
-        // load option: unhandled-prompt-behavior
+        // load option: UnhandledPromptBehavior
         private void LoadUnhandledPromptBehavior(DriverOptions driverOptions)
         {
             driverOptions.UnhandledPromptBehavior = UnhandledPromptBehavior;
         }
 
-        // load option: page-load-strategy
+        // load option: PageLoadStrategy
         private void LoadPageLoadStrategy(DriverOptions driverOptions)
         {
             driverOptions.PageLoadStrategy = PageLoadStrategy;
         }
 
-        // load option: load-proxy
+        // load option: Proxy
         private void LoadProxy(DriverOptions driverOptions)
         {
             driverOptions.Proxy = Proxy;

@@ -2,9 +2,6 @@
 
 using OpenQA.Selenium.Mock;
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
@@ -27,6 +24,8 @@ using Gravity.Abstraction.Contracts;
 using Gravity.Abstraction.Interfaces;
 using Gravity.Abstraction.Attributes;
 using Gravity.Abstraction.Extensions;
+using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Gravity.Abstraction.WebDriver
 {
@@ -34,18 +33,16 @@ namespace Gravity.Abstraction.WebDriver
     {
         // constants
         private const BindingFlags BINDING = BindingFlags.Instance | BindingFlags.NonPublic;
-
-        private const string FTL2 = "initialize method for [driver={0}; remote={1}] driver was not found. " +
-            "please make sure that you have provided a correct driver-parameters";
+        private const string FTL2 = "Get-Driver -Driver {0} -Remote {1} = NotFound";
 
         // members: state
-        private readonly string driverParams;
+        private readonly IDictionary<string, object> driverParams;
+        private readonly IDictionary<string, object> optionsToken;
+        private readonly IDictionary<string, object> serviceToken;
+        private readonly IDictionary<string, object> capabilities;
         private readonly int commandTimeout;
-        private readonly JToken driverToken;
-        private readonly JToken driverBinariesToken;
-        private readonly JToken optionsToken;
-        private readonly JToken serviceToken;
-        private readonly Dictionary<string, object> capabilities;
+        private readonly string driverToken;
+        private readonly string driverBinariesToken;
 
         /// <summary>
         /// creates an instance of driver-factory, parsing driver-parameters to create
@@ -53,23 +50,26 @@ namespace Gravity.Abstraction.WebDriver
         /// </summary>
         /// <param name="driverParams">driver-parameters to create web-driver by</param>
         public DriverFactory(string driverParams)
+            : this(JsonSerializer.Deserialize<IDictionary<string, object>>(driverParams))
+        { }
+
+        /// <summary>
+        /// creates an instance of driver-factory, parsing driver-parameters to create
+        /// web-driver instance
+        /// </summary>
+        /// <param name="driverParams">driver-parameters to create web-driver by</param>
+        public DriverFactory(IDictionary<string, object> driverParams)
         {
+            // setup
             this.driverParams = driverParams;
 
             // publish tokens
-            var paramsToken = JToken.Parse(driverParams);
-            var timeout = paramsToken.ByName("commandTimeout")?.FirstOrDefault()?.First;
-            driverToken = paramsToken.ByName("driver")?.FirstOrDefault()?.First;
-            driverBinariesToken = paramsToken.ByName("driverBinaries")?.FirstOrDefault()?.First;
-            optionsToken = paramsToken.ByName("options")?.FirstOrDefault()?.First;
-            serviceToken = paramsToken.ByName("service")?.FirstOrDefault()?.First;
-
-            // populate capabilities
-            _ = int.TryParse($"{timeout}", out commandTimeout);
-            var capabilitiesToken = paramsToken.ByName("capabilities")?.FirstOrDefault()?.First;
-            capabilities = capabilitiesToken == null
-                ? new Dictionary<string, object>()
-                : JsonConvert.DeserializeObject<Dictionary<string, object>>($"{capabilitiesToken}");
+            commandTimeout = driverParams.Get("commandTimeout", 600);
+            driverToken = driverParams.Get("driver", Driver.Chrome);
+            driverBinariesToken = driverParams.Get("driverBinaries", ".");
+            optionsToken = driverParams.Get("options", new Dictionary<string, object>());
+            serviceToken = driverParams.Get("service", new Dictionary<string, object>());
+            capabilities = driverParams.Get("capabilities", new Dictionary<string, object>());
         }
 
         #region *** create driver factory                ***
@@ -99,7 +99,7 @@ namespace Gravity.Abstraction.WebDriver
             where TParams : DriverOptionsParams, IOptionable<TOptions>
         {
             // parse token
-            var isOptions = optionsToken?.HasValues == true;
+            var isOptions = optionsToken.Keys.Any();
 
             // null validation
             if (!isOptions)
@@ -111,7 +111,7 @@ namespace Gravity.Abstraction.WebDriver
             }
 
             // deserialize options
-            var paramsObj = JsonConvert.DeserializeObject<TParams>($"{optionsToken}");
+            var paramsObj = optionsToken.Transform<TParams>();
 
             // return dynamic object
             var options = paramsObj.ToDriverOptions();
@@ -134,53 +134,11 @@ namespace Gravity.Abstraction.WebDriver
             }
 
             // deserialize options
-            var paramsObj = JsonConvert.DeserializeObject<TParams>(driverParams);
+            var paramsObj = driverParams.Transform<TParams>();
             paramsObj.HostName = string.IsNullOrEmpty(paramsObj.HostName) ? Environment.MachineName : paramsObj.HostName;
 
             // return dynamic object
             return paramsObj.ToDriverService(driverBinaries);
-        }
-
-        // get capabilities interface and manipulate capabilities
-        private ICapabilities GetCapabilities(DriverOptions driverOptions, Dictionary<string, object> rawCapabilities)
-        {
-            // convert options
-            var options = driverOptions.ToCapabilities();
-
-            // get capabilities field
-            var isFieldNull = options
-                .GetType()
-                .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance) == null;
-
-            Dictionary<string, object> cap;
-            if (isFieldNull)
-            {
-                cap = (Dictionary<string, object>)options
-                    .GetType()
-                    .BaseType
-                    .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(options);
-            }
-            else
-            {
-                cap = (Dictionary<string, object>)options
-                    .GetType()
-                    .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(options);
-            }
-
-            // exit conditions
-            if (cap == null || rawCapabilities == null)
-            {
-                return options;
-            }
-
-            // add capabilities
-            foreach (var item in rawCapabilities)
-            {
-                cap[item.Key] = item.Value;
-            }
-            return options;
         }
 
         // get web-driver method
@@ -205,7 +163,6 @@ namespace Gravity.Abstraction.WebDriver
         }
         #endregion
 
-#pragma warning disable IDE0051
         #region *** driver generating methods repository ***
         // LOCAL WEB DRIVERS
         [DriverMethod(Driver = Driver.Chrome)]
@@ -253,6 +210,7 @@ namespace Gravity.Abstraction.WebDriver
         }
 
         [DriverMethod(Driver = Driver.Mock)]
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Used by reflection. Cannot be static.")]
         private IWebDriver GetMock(string driverBinaries)
         {
             return new MockWebDriver(driverBinaries);
@@ -312,11 +270,10 @@ namespace Gravity.Abstraction.WebDriver
             return GetRemote<SafariOptions, SafariOptionsParams>(driverBinaries);
         }
         #endregion
-#pragma warning restore
 
         // TODO: add default constructor options when there is no binaries to load
         // Gets local web driver instance
-        private IWebDriver GetLocal<TDriver>(DriverOptions options, DriverService service, string driverBinaries) where TDriver : IWebDriver
+        private static IWebDriver GetLocal<TDriver>(DriverOptions options, DriverService service, string driverBinaries) where TDriver : IWebDriver
         {
             // get driver type
             var driverType = typeof(TDriver);
@@ -377,6 +334,48 @@ namespace Gravity.Abstraction.WebDriver
 
             // factor web driver
             return (IWebDriver)Activator.CreateInstance(typeof(TDriver), arguments);
+        }
+
+        // get capabilities interface and manipulate capabilities
+        private static ICapabilities GetCapabilities(DriverOptions driverOptions, IDictionary<string, object> rawCapabilities)
+        {
+            // convert options
+            var options = driverOptions.ToCapabilities();
+
+            // get capabilities field
+            var isFieldNull = options
+                .GetType()
+                .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance) == null;
+
+            Dictionary<string, object> cap;
+            if (isFieldNull)
+            {
+                cap = (Dictionary<string, object>)options
+                    .GetType()
+                    .BaseType
+                    .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(options);
+            }
+            else
+            {
+                cap = (Dictionary<string, object>)options
+                    .GetType()
+                    .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(options);
+            }
+
+            // exit conditions
+            if (cap == null || rawCapabilities == null)
+            {
+                return options;
+            }
+
+            // add capabilities
+            foreach (var item in rawCapabilities)
+            {
+                cap[item.Key] = item.Value;
+            }
+            return options;
         }
     }
 }

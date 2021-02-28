@@ -1,6 +1,4 @@
 ﻿using Gravity.Abstraction.Interfaces;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using OpenQA.Selenium.IE;
 using System.Runtime.Serialization;
 
@@ -45,7 +43,7 @@ namespace Gravity.Abstraction.Contracts
         /// The logging level.
         /// </value>
         [DataMember]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public InternetExplorerDriverLogLevel LoggingLevel { get; set; }
 
         /// <summary>
@@ -54,13 +52,13 @@ namespace Gravity.Abstraction.Contracts
         /// only the local loop-back address can connect.
         /// </summary>
         /// <value>
-        /// The white-listed ip addresses.
+        /// The white-listed IP addresses.
         /// </value>
         [DataMember]
         public string WhitelistedIPAddresses { get; set; }
 
         /// <summary>
-        /// generate driver-service for the current driver based of the params object
+        /// generate driver-service for the current driver based of the parameters object
         /// </summary>
         /// <param name="driverPath">the full path to the directory containing the executable providing the service
         /// to drive the browser</param>

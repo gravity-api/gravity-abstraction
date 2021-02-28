@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using OpenQA.Selenium.IE;
+﻿using OpenQA.Selenium.IE;
 using System;
 using System.Runtime.Serialization;
 using Gravity.Abstraction.Interfaces;
@@ -39,7 +37,7 @@ namespace Gravity.Abstraction.Contracts
         /// The element scroll behavior.
         /// </value>
         [DataMember]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public InternetExplorerElementScrollBehavior ElementScrollBehavior { get; set; }
 
         /// <summary>
@@ -166,7 +164,7 @@ namespace Gravity.Abstraction.Contracts
         public bool UsePerProcessProxy { get; set; }
 
         /// <summary>
-        /// Generate DriverOptions for the current driver based of the params object
+        /// Generate DriverOptions for the current driver based of the parameters object
         /// </summary>
         /// <returns>
         /// DriverOptions
