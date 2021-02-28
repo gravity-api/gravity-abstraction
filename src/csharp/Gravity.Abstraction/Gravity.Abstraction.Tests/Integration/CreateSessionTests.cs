@@ -1,17 +1,7 @@
-﻿using Gravity.Abstraction.Contracts;
-using Gravity.Abstraction.Tests.Base;
-using Gravity.Abstraction.WebDriver;
+﻿using Gravity.Abstraction.Tests.Base;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-
-using Newtonsoft.Json.Serialization;
-
-using OpenQA.Selenium.Remote;
-
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 
 namespace Gravity.Abstraction.Tests.Integration

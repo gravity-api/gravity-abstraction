@@ -1,12 +1,14 @@
 ﻿using Gravity.Abstraction.Contracts;
 using Gravity.Abstraction.WebDriver;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Newtonsoft.Json.Serialization;
 using OpenQA.Selenium.Remote;
+
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 namespace Gravity.Abstraction.Tests.Base
 {
@@ -27,12 +29,12 @@ namespace Gravity.Abstraction.Tests.Base
             // setup
             var driverParams = "" +
                 "{" +
-                "    'driver':'" + onDriver + "'," +
-                "    'driverBinaries':'" + onContext.Properties["Grid.Endpoint"] + "'," +
-                "    'capabilities': {" +
-                "        'project':'" + onContext.Properties["Project.Name"] + "'," +
-                "        'build':'" + onContext.Properties["Build.Number"] + "'," +
-                "        'name':'" + onTest + "'" +
+                "    \"driver\":\"" + onDriver + "\"," +
+                "    \"driverBinaries\":\"" + onContext.Properties["Grid.Endpoint"] + "\"," +
+                "    \"capabilities\": {" +
+                "        \"project\":\"" + onContext.Properties["Project.Name"] + "\"," +
+                "        \"build\":\"" + onContext.Properties["Build.Number"] + "\"," +
+                "        \"name\":\"" + onTest + "\"" +
                 "    }" +
                 "}";
 
@@ -59,7 +61,7 @@ namespace Gravity.Abstraction.Tests.Base
         /// Updates tests results on BrowserStack (if applicable)
         /// </summary>
         /// <param name="onContext"><see cref="TestContext"/> under this run.</param>
-        public void UpdateBrowserStack(TestContext onContext)
+        public static void UpdateBrowserStack(TestContext onContext)
         {
             // setup
             var isBrowserStack = $"{onContext.Properties["Grid.Endpoint"]}".Contains("browserstack.com/wd/hub");
@@ -82,19 +84,20 @@ namespace Gravity.Abstraction.Tests.Base
             Put(requestUri, requestBody, onContext);
         }
 
-        private void Put(string requestUri, object requestBody, TestContext onContext)
+        private static void Put(string requestUri, object requestBody, TestContext onContext)
         {
             // setup
-            var settings = new JsonSerializerSettings
+            var settings = new JsonSerializerOptions
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
             };
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(scheme: "Basic", parameter: $"{onContext.Properties["Grid.BasicAuthorization"]}");
 
             // create content
-            var body = JsonConvert.SerializeObject(requestBody, settings);
+            var body = JsonSerializer.Serialize(requestBody, settings);
             var stringContent = new StringContent(content: body, Encoding.UTF8, mediaType: "application/json");
 
             // send to server
