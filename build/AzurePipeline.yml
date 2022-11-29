@@ -12,6 +12,8 @@ pool:
 
 variables:
 - group: browserstack.com
+- group: gravity.api
+- group: nuget.org
 - name: 'buildConfiguration'
   value: 'Release'
 
