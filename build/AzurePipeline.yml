@@ -2,10 +2,10 @@
 
 name: Gravity.Abstraction.$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
 
-# trigger:
-#   branches:
-#     include:
-#     - master
+trigger:
+  branches:
+    include:
+    - master
 
 pool:
   vmImage: windows-latest
