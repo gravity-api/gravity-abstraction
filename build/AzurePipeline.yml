@@ -88,7 +88,7 @@ steps:
 - task: GitHubRelease@1
   displayName: 'Create GitHub Tag'
   inputs:
-    gitHubConnection: 'GitHub connection - Gravity API'
+    gitHubConnection: 'github.com'
     repositoryName: 'gravity-api/gravity-abstraction'
     action: 'create'
     target: '$(Build.SourceVersion)'
