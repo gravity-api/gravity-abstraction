@@ -2,8 +2,13 @@
 
 name: Gravity.Abstraction.$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
 
+# trigger:
+#   branches:
+#     include:
+#     - master
+
 pool:
-  name: Default
+  vmImage: windows-latest
 
 variables:
 - group: browserstack.com
