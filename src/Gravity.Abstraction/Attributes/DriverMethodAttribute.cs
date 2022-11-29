@@ -1,9 +1,5 @@
 ﻿/*
  * CHANGE LOG (keep only last 5 threads)
- *    
- * 2019-01-17
- *    - modify: improve XML comments
- *    - modify: set default string.empty value using constructor
  */
 using System;
 

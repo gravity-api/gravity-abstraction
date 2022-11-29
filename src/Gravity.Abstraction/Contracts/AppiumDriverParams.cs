@@ -23,13 +23,13 @@ namespace Gravity.Abstraction.Contracts
         public override string Driver => Contracts.Driver.Appium;
 
         /// <summary>
-        /// gets or sets appium driver-options
+        /// gets or sets Appium driver-options
         /// </summary>
         [DataMember]
         public override AppiumOptionsParams Options { get; set; }
 
         /// <summary>
-        /// gets or sets appium driver-service configuration
+        /// gets or sets Appium driver-service configuration
         /// </summary>
         [DataMember]
         public override AppiumServiceParams Service { get; set; }

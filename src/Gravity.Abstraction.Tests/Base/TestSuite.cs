@@ -27,16 +27,22 @@ namespace Gravity.Abstraction.Tests.Base
         public static bool CreateRemoteDriver(string onDriver, string onTest, TestContext onContext)
         {
             // setup
-            var driverParams = "" +
-                "{" +
-                "    \"driver\":\"" + onDriver + "\"," +
-                "    \"driverBinaries\":\"" + onContext.Properties["Grid.Endpoint"] + "\"," +
-                "    \"capabilities\": {" +
-                "        \"project\":\"" + onContext.Properties["Project.Name"] + "\"," +
-                "        \"build\":\"" + onContext.Properties["Build.Number"] + "\"," +
-                "        \"name\":\"" + onTest + "\"" +
-                "    }" +
-                "}";
+            var driverParams = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                Driver = onDriver,
+                DriverBinaries = $"{onContext.Properties["Grid.Endpoint"]}",
+                Options = new
+                {
+                    Application = "notepad.exe",
+                    Arguments = new[] { "file.txt" }
+                },
+                Capabilities = new
+                {
+                    Project = onContext.Properties["Project.Name"],
+                    Build = onContext.Properties["Build.Number"],
+                    Name = onTest
+                }
+            }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
             // execute
             var driver = new DriverFactory(driverParams).Create();

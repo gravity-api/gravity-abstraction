@@ -26,7 +26,7 @@ namespace Gravity.Abstraction.Contracts
         private OptionCollector options;
 
         /// <summary>
-        /// create new instance of appium-service-params object
+        /// create new instance of appium-service-parameters object
         /// </summary>
         public AppiumServiceParams()
         {

@@ -11,8 +11,15 @@ variables:
   value: 'Release'
 
 steps:
+- task: UseDotNet@2
+  displayName: "Install .NET Core SDK"
+  inputs:
+    version: 7.x
+    performMultiLevelLookup: true
+    includePreviewVersions: false
+
 - task: DotNetCoreCLI@2
-  displayName: restore dependencies
+  displayName: Restore Dependencies
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
@@ -21,14 +28,14 @@ steps:
     verbosityRestore: 'Diagnostic'
 
 - task: DotNetCoreCLI@2
-  displayName: build projects
+  displayName: Build Projects
   inputs:
     command: 'build'
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
 - powershell: |
-   [xml]$doc = Get-Content azure-settings.runsettings
+   [xml]$doc = Get-Content $(Build.SourcesDirectory)/test/AzureSettings.runsettings
    $doc.RunSettings.TestRunParameters.ChildNodes.Item(0).value = '$(Grid.Endpoint)'
    $doc.RunSettings.TestRunParameters.ChildNodes.Item(1).value = '$(Grid.BasicAuthorization)'
    $doc.RunSettings.TestRunParameters.ChildNodes.Item(2).value = '$(Build.BuildNumber)'
@@ -36,7 +43,7 @@ steps:
   displayName: create test settings > override with production parameters
 
 - task: DotNetCoreCLI@2
-  displayName: execute automated testing
+  displayName: Execute Automated Testing
   inputs:
     command: 'test'
     projects: '**/*[Tt]ests/*.csproj'
@@ -45,10 +52,10 @@ steps:
 
 - powershell: |
    Remove-Item azure-settings-prod.runsettings
-  displayName: cleanup
+  displayName: Cleanup
 
 - task: DotNetCoreCLI@2
-  displayName: create package
+  displayName: Create Package
   inputs:
     command: 'pack'
     packagesToPack: '**/!(*[Tt]ests)/*.csproj'
@@ -57,7 +64,7 @@ steps:
     packDirectory: $(Build.ArtifactStagingDirectory)
 
 - task: NuGetCommand@2
-  displayName: push package
+  displayName: Push Package
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
@@ -65,7 +72,7 @@ steps:
     publishFeedCredentials: 'nuget.org'
 
 - task: PowerShell@2
-  displayName: 'parse build version for GitHub tag'
+  displayName: 'Parse Build Version for GitHub Tag'
   inputs:
     targetType: 'inline'
     script: |
@@ -76,7 +83,7 @@ steps:
       Write-Host "##vso[task.setvariable variable=buildVersion]$version"
 
 - task: GitHubRelease@1
-  displayName: 'create GitHub tag'
+  displayName: 'Create GitHub Tag'
   inputs:
     gitHubConnection: 'GitHub connection - Gravity API'
     repositoryName: 'gravity-api/gravity-abstraction'

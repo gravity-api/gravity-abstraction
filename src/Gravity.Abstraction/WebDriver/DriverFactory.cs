@@ -26,6 +26,7 @@ using Gravity.Abstraction.Attributes;
 using Gravity.Abstraction.Extensions;
 using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
+using OpenQA.Selenium.Uia;
 
 namespace Gravity.Abstraction.WebDriver
 {
@@ -37,10 +38,10 @@ namespace Gravity.Abstraction.WebDriver
 
         // members: state
         private readonly IDictionary<string, object> driverParams;
-        private readonly IDictionary<string, object> options;
+        private readonly IDictionary<string, object> _options;
         private readonly IDictionary<string, object> service;
-        private readonly IDictionary<string, object> capabilities;
-        private readonly int commandTimeout;
+        private readonly IDictionary<string, object> _capabilities;
+        private readonly int _commandTimeout;
         private readonly string driver;
         private readonly string driverBinaries;
 
@@ -64,12 +65,12 @@ namespace Gravity.Abstraction.WebDriver
             this.driverParams = driverParams;
 
             // publish tokens
-            commandTimeout = driverParams.Find("commandTimeout", 600);
+            _commandTimeout = driverParams.Find("commandTimeout", 600);
             driver = driverParams.Find("driver", Driver.Chrome);
             driverBinaries = driverParams.Find("driverBinaries", ".");
-            options = driverParams.Find("options", new Dictionary<string, object>());
+            _options = driverParams.Find("options", new Dictionary<string, object>());
             service = driverParams.Find("service", new Dictionary<string, object>());
-            capabilities = driverParams.Find("capabilities", new Dictionary<string, object>());
+            _capabilities = driverParams.Find("capabilities", new Dictionary<string, object>());
         }
 
         #region *** create driver factory ***
@@ -97,11 +98,11 @@ namespace Gravity.Abstraction.WebDriver
         private IWebDriver GetChrome(string driverBinaries)
         {
             // get constructor arguments
-            var _options = GetOptions<ChromeOptions, ChromeOptionsParams>(null);
+            var options = GetOptions<ChromeOptions, ChromeOptionsParams>(null);
             var _service = GetService<ChromeDriverService, ChromeServiceParams>(driverBinaries);
 
             // factor web driver
-            return GetLocal<ChromeDriver>(_options, _service, driverBinaries);
+            return GetLocal<ChromeDriver>(options, _service, driverBinaries);
         }
 
         [DriverMethod(Driver = Driver.Firefox)]
@@ -109,11 +110,11 @@ namespace Gravity.Abstraction.WebDriver
         private IWebDriver GetFirefox(string driverBinaries)
         {
             // get constructor arguments
-            var _options = GetOptions<FirefoxOptions, FirefoxOptionsParams>(null);
+            var options = GetOptions<FirefoxOptions, FirefoxOptionsParams>(null);
             var _service = GetService<FirefoxDriverService, FirefoxServiceParams>(driverBinaries);
 
             // factor web driver
-            return GetLocal<FirefoxDriver>(_options, _service, driverBinaries);
+            return GetLocal<FirefoxDriver>(options, _service, driverBinaries);
         }
 
         [DriverMethod(Driver = Driver.InternetExplorer)]
@@ -121,11 +122,11 @@ namespace Gravity.Abstraction.WebDriver
         private IWebDriver GetInternetExplorer(string driverBinaries)
         {
             // get constructor arguments
-            var _options = GetOptions<InternetExplorerOptions, InternetExplorerOptionsParams>(null);
+            var options = GetOptions<InternetExplorerOptions, InternetExplorerOptionsParams>(null);
             var _service = GetService<InternetExplorerDriverService, InternetExplorerServiceParams>(driverBinaries);
 
             // factor web driver
-            return GetLocal<InternetExplorerDriver>(_options, _service, driverBinaries);
+            return GetLocal<InternetExplorerDriver>(options, _service, driverBinaries);
         }
 
         [DriverMethod(Driver = Driver.Edge)]
@@ -133,11 +134,11 @@ namespace Gravity.Abstraction.WebDriver
         private IWebDriver GetEdge(string driverBinaries)
         {
             // get constructor arguments
-            var _options = GetOptions<EdgeOptions, EdgeOptionsParams>(null);
+            var options = GetOptions<EdgeOptions, EdgeOptionsParams>(null);
             var _service = GetService<EdgeDriverService, EdgeServiceParams>(driverBinaries);
 
             // factor web driver
-            return GetLocal<EdgeDriver>(_options, _service, driverBinaries);
+            return GetLocal<EdgeDriver>(options, _service, driverBinaries);
         }
 
         [DriverMethod(Driver = Driver.Mock)]
@@ -153,11 +154,11 @@ namespace Gravity.Abstraction.WebDriver
         private IWebDriver GetSafari(string driverBinaries)
         {
             // get constructor arguments
-            var _options = GetOptions<SafariOptions, SafariOptionsParams>(null);
+            var options = GetOptions<SafariOptions, SafariOptionsParams>(null);
             var _service = GetService<SafariDriverService, SafariServiceParams>(driverBinaries);
 
             // factor web driver
-            return GetLocal<SafariDriver>(_options, _service, driverBinaries);
+            return GetLocal<SafariDriver>(options, _service, driverBinaries);
         }
 
         // REMOTE WEB DRIVERS (Appium included)
@@ -209,6 +210,20 @@ namespace Gravity.Abstraction.WebDriver
         {
             return GetRemote<SafariOptions, SafariOptionsParams>(driverBinaries);
         }
+
+        [DriverMethod(Driver = "UiaDriver", RemoteDriver = true)]
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Used by reflection.")]
+        private IWebDriver GetRemoteDriver(string driverBinaries)
+        {
+            // get constructor arguments
+            var options = GetOptions<UiaOptions, UiaOptionsParams>(platformName: "WINDOWS");
+            var capabilities = GetCapabilities(options, _capabilities);
+
+            // factor web driver
+            return _commandTimeout == 0
+                ? new UiaDriver(new Uri(driverBinaries), capabilities)
+                : new UiaDriver(new Uri(driverBinaries), capabilities, TimeSpan.FromSeconds(_commandTimeout));
+        }
         #endregion
 
         // TODO: add default constructor options when there are no binaries to load
@@ -249,13 +264,13 @@ namespace Gravity.Abstraction.WebDriver
             where TParams : DriverOptionsParams, IOptionable<TOptions>
         {
             // get constructor arguments
-            var _options = GetOptions<TOptions, TParams>(null);
-            var _capabilities = GetCapabilities(_options, capabilities);
+            var options = GetOptions<TOptions, TParams>(null);
+            var capabilities = GetCapabilities(options, _capabilities);
 
             // factor web driver
-            return commandTimeout == 0
-                ? new RemoteWebDriver(new Uri(driverBinaries), _capabilities)
-                : new RemoteWebDriver(new Uri(driverBinaries), _capabilities, TimeSpan.FromSeconds(commandTimeout));
+            return _commandTimeout == 0
+                ? new RemoteWebDriver(new Uri(driverBinaries), capabilities)
+                : new RemoteWebDriver(new Uri(driverBinaries), capabilities, TimeSpan.FromSeconds(_commandTimeout));
         }
 
         // parse driver-parameters and driver-options for remote web-driver
@@ -264,7 +279,7 @@ namespace Gravity.Abstraction.WebDriver
             where TParams : DriverOptionsParams, IOptionable<TOptions>
         {
             // parse token
-            var isOptions = options.Keys.Count > 0;
+            var isOptions = this._options.Keys.Count > 0;
 
             // null validation
             if (!isOptions)
@@ -276,15 +291,15 @@ namespace Gravity.Abstraction.WebDriver
             }
 
             // deserialize options
-            var paramsObj = options.Transform<TParams>();
+            var paramsObj = this._options.Transform<TParams>();
 
             // return dynamic object
-            var _options = paramsObj.ToDriverOptions();
+            var options = paramsObj.ToDriverOptions();
             if (!string.IsNullOrEmpty(platformName))
             {
-                _options.PlatformName = platformName;
+                options.PlatformName = platformName;
             }
-            return _options;
+            return options;
         }
 
         // parse driver-parameters and server-options for remote web-driver
@@ -334,12 +349,12 @@ namespace Gravity.Abstraction.WebDriver
             where TDriver : AppiumDriver<IWebElement>
         {
             // get constructor arguments
-            var _options = GetOptions<TOptions, TParams>(platformName);
-            GetCapabilities(_options, capabilities);
+            var options = GetOptions<TOptions, TParams>(platformName);
+            GetCapabilities(options, _capabilities);
 
-            var arguments = commandTimeout == 0
-                ? new object[] { new Uri(driverBinaries), _options }
-                : new object[] { new Uri(driverBinaries), _options, TimeSpan.FromSeconds(commandTimeout) };
+            var arguments = _commandTimeout == 0
+                ? new object[] { new Uri(driverBinaries), options }
+                : new object[] { new Uri(driverBinaries), options, TimeSpan.FromSeconds(_commandTimeout) };
 
             // factor web driver
             return (IWebDriver)Activator.CreateInstance(typeof(TDriver), arguments);
@@ -349,34 +364,39 @@ namespace Gravity.Abstraction.WebDriver
         private static ICapabilities GetCapabilities(DriverOptions driverOptions, IDictionary<string, object> rawCapabilities)
         {
             // convert options
-            var _options = driverOptions.ToCapabilities();
+            var options = driverOptions.ToCapabilities();
 
             // get capabilities field
-            var isFieldNull = _options
+            var isFieldNull = options
                 .GetType()
                 .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance) == null;
+            var isUia = options.GetType().IsAssignableFrom(typeof(UiaCapabilities));
 
-            Dictionary<string, object> cap;
-            if (isFieldNull)
+            Dictionary<string, object> cap = default;
+            if (isUia)
             {
-                cap = (Dictionary<string, object>)_options
+                cap = ((UiaCapabilities)options).CapabilitiesDictionary;
+            }
+            else if (isFieldNull)
+            {
+                cap = (Dictionary<string, object>)options
                     .GetType()
                     .BaseType
                     .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(_options);
+                    .GetValue(options);
             }
-            else
+            else if (!isFieldNull)
             {
-                cap = (Dictionary<string, object>)_options
+                cap = (Dictionary<string, object>)options
                     .GetType()
                     .GetField("capabilities", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(_options);
+                    .GetValue(options);
             }
 
             // exit conditions
-            if (cap == null || rawCapabilities == null)
+            if (cap == default || rawCapabilities == null)
             {
-                return _options;
+                return options;
             }
 
             // add capabilities
@@ -384,7 +404,7 @@ namespace Gravity.Abstraction.WebDriver
             {
                 cap[item.Key] = ((JsonElement)item.Value).GetRawText();
             }
-            return _options;
+            return options;
         }
     }
 }

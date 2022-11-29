@@ -68,5 +68,17 @@ namespace Gravity.Abstraction.Tests.Integration
             // assertion
             Assert.IsTrue(condition: actual);
         }
+
+        public void CreateRemoteUia()
+        {
+            // execute
+            var actual = CreateRemoteDriver(
+                onDriver: "UiaDriver",
+                onTest: MethodBase.GetCurrentMethod().Name,
+                onContext: TestContext);
+
+            // assertion
+            Assert.IsTrue(condition: actual);
+        }
     }
 }

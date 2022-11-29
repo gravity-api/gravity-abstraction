@@ -18,7 +18,7 @@ namespace Gravity.Abstraction.Contracts
     public class AppiumOptionsParams : DriverOptionsParams, IOptionable<AppiumOptions>
     {
         /// <summary>
-        /// generate driver-options for the current driver based of the params object
+        /// generate driver-options for the current driver based of the parameters object
         /// </summary>
         /// <returns>driver-options</returns>
         public AppiumOptions ToDriverOptions() => ToDriverOptions(new AppiumOptions());
