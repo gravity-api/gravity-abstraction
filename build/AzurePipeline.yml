@@ -47,7 +47,7 @@ steps:
    $doc.RunSettings.TestRunParameters.ChildNodes.Item(1).value = '$(Grid.BasicAuthorization)'
    $doc.RunSettings.TestRunParameters.ChildNodes.Item(2).value = '$(Build.BuildNumber)'
    $doc.Save("azure-settings-prod.runsettings")
-  displayName: create test settings > override with production parameters
+  displayName: Create Test Settings > Override with Production Parameters
 
 - task: DotNetCoreCLI@2
   displayName: Execute Automated Testing
@@ -88,7 +88,7 @@ steps:
     script: |
       # setup
       [regex]$pattern = '(\d+.?)+'
-      $version        = $pattern.Matches('$(Build.BuildNumber)') | foreach-object {$_.Value}      
+      $version        = $pattern.Matches('$(Build.BuildNumber)') | foreach-object {$_.Value}
       # set value
       Write-Host "##vso[task.setvariable variable=buildVersion]$version"
 

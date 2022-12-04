@@ -56,7 +56,6 @@ namespace Gravity.Abstraction.Tests.Base
 
             // assertion
             var actual = driver != null;
-            driver.FindElement(By.Name("nameToFind"));
 
             // cleanup
             driver.Dispose();
