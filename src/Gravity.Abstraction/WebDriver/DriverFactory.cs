@@ -27,6 +27,7 @@ using Gravity.Abstraction.Extensions;
 using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using OpenQA.Selenium.Uia;
+using Gravity.Abstraction.Uia;
 
 namespace Gravity.Abstraction.WebDriver
 {
@@ -87,7 +88,15 @@ namespace Gravity.Abstraction.WebDriver
             var method = GetMethod(driver, isRemote);
 
             // generate driver
-            return (IWebDriver)method.Invoke(this, new object[] { driverBinaries });
+            try
+            {
+                return (IWebDriver)method.Invoke(this, new object[] { driverBinaries });
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }            
         }
         #endregion
 
@@ -218,11 +227,14 @@ namespace Gravity.Abstraction.WebDriver
             // get constructor arguments
             var options = GetOptions<UiaOptions, UiaOptionsParams>(platformName: "WINDOWS");
             var capabilities = GetCapabilities(options, _capabilities);
+            options.BrowserVersion = string.IsNullOrEmpty(options.BrowserVersion) ? "1.0" : options.BrowserVersion;
+
 
             // factor web driver
-            return _commandTimeout == 0
-                ? new UiaDriver(new Uri(driverBinaries), capabilities)
-                : new UiaDriver(new Uri(driverBinaries), capabilities, TimeSpan.FromSeconds(_commandTimeout));
+            var executor = _commandTimeout == 0
+                ? new UiaCommandExecutor(new Uri(driverBinaries), TimeSpan.FromSeconds(60))
+                : new UiaCommandExecutor(new Uri(driverBinaries), TimeSpan.FromSeconds(_commandTimeout));
+            return new UiaDriver(executor, capabilities);
         }
         #endregion
 

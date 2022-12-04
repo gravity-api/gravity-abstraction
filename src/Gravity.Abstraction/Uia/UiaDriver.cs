@@ -55,8 +55,8 @@ namespace OpenQA.Selenium.Uia
         /// <summary>
         /// initializes a new instance of the <see cref="UiDriver"/> class using the specified <see cref="UiaDriverService"/>
         /// </summary>
-        /// <param name="service">the <see cref="ChromeDriverService"/> to use.</param>
-        /// <param name="options">The <see cref="ChromeOptions"/> to be used with the Chrome driver.</param>
+        /// <param name="service">the <see cref="UiaDriverService"/> to use.</param>
+        /// <param name="options">The <see cref="UiaOptions"/> to be used with the Chrome driver.</param>
         /// <param name="commandTimeout">The maximum amount of time to wait for each command.</param>
         public UiaDriver(UiaDriverService service, UiaOptions options, TimeSpan commandTimeout)
             : base(new DriverServiceCommandExecutor(service, commandTimeout), options.ToCapabilities())
@@ -66,6 +66,15 @@ namespace OpenQA.Selenium.Uia
 
         public UiaDriver(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
             : base(remoteAddress, desiredCapabilities, commandTimeout)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteWebDriver"/> class
+        /// </summary>
+        /// <param name="commandExecutor">An <see cref="ICommandExecutor"/> object which executes commands for the driver.</param>
+        /// <param name="desiredCapabilities">An <see cref="ICapabilities"/> object containing the desired capabilities of the browser.</param>
+        public UiaDriver(ICommandExecutor commandExecutor, ICapabilities desiredCapabilities)
+            : base(commandExecutor, desiredCapabilities)
         { }
 
         /// <summary>
