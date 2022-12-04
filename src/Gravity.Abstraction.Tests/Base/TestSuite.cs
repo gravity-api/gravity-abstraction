@@ -27,7 +27,7 @@ namespace Gravity.Abstraction.Tests.Base
         public static bool CreateRemoteDriver(string onDriver, string onTest, TestContext onContext)
         {
             // setup
-            var driverParams = System.Text.Json.JsonSerializer.Serialize(new
+            var driverParams = JsonSerializer.Serialize(new
             {
                 Driver = onDriver,
                 DriverBinaries = $"{onContext.Properties["Grid.Endpoint"]}",
