@@ -21,7 +21,7 @@ namespace Gravity.Abstraction.Contracts
     public class UiaOptionsParams : DriverOptionsParams, IOptionable<UiaOptions>
     {
         // members: state
-        private UiaOptions uiaOptions;
+        private UiaOptions _uiaOptions;
 
         /// <summary>
         /// gets or sets path to application file
@@ -68,16 +68,16 @@ namespace Gravity.Abstraction.Contracts
         /// <returns>chrome driver-options</returns>
         public UiaOptions ToDriverOptions()
         {
-            uiaOptions = new UiaOptions();
+            _uiaOptions = new UiaOptions();
 
-            ToDriverOptions(uiaOptions);
-            uiaOptions.Arguments = Arguments;
-            uiaOptions.TreeScope = TreeScope;
-            uiaOptions.DriverPath = DriverPath;
-            uiaOptions.UseNativeEvents = UseNativeEvents;
-            uiaOptions.Application = Application;
+            ToDriverOptions(_uiaOptions);
+            _uiaOptions.Arguments = Arguments;
+            _uiaOptions.TreeScope = TreeScope;
+            _uiaOptions.DriverPath = DriverPath;
+            _uiaOptions.UseNativeEvents = UseNativeEvents;
+            _uiaOptions.Application = Application;
 
-            return uiaOptions;
+            return _uiaOptions;
         }
     }
 }

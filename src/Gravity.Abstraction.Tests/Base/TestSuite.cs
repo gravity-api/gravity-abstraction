@@ -3,6 +3,7 @@ using Gravity.Abstraction.WebDriver;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 
 using System.Net.Http;
@@ -27,7 +28,7 @@ namespace Gravity.Abstraction.Tests.Base
         public static bool CreateRemoteDriver(string onDriver, string onTest, TestContext onContext)
         {
             // setup
-            var driverParams = System.Text.Json.JsonSerializer.Serialize(new
+            var driverParams = JsonSerializer.Serialize(new
             {
                 Driver = onDriver,
                 DriverBinaries = $"{onContext.Properties["Grid.Endpoint"]}",
@@ -55,6 +56,7 @@ namespace Gravity.Abstraction.Tests.Base
 
             // assertion
             var actual = driver != null;
+            driver.FindElement(By.Name("nameToFind"));
 
             // cleanup
             driver.Dispose();

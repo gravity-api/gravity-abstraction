@@ -2,6 +2,8 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using OpenQA.Selenium;
+
 using System.Reflection;
 
 namespace Gravity.Abstraction.Tests.Integration
@@ -69,6 +71,7 @@ namespace Gravity.Abstraction.Tests.Integration
             Assert.IsTrue(condition: actual);
         }
 
+        [TestMethod]
         public void CreateRemoteUia()
         {
             // execute
