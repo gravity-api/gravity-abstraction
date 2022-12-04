@@ -71,7 +71,6 @@ namespace Gravity.Abstraction.Tests.Integration
             Assert.IsTrue(condition: actual);
         }
 
-        [TestMethod]
         public void CreateRemoteUia()
         {
             // execute

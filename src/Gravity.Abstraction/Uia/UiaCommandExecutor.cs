@@ -4,6 +4,7 @@ using OpenQA.Selenium.Remote;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,13 +23,16 @@ namespace Gravity.Abstraction.Uia
             : base(addressOfRemoteServer, timeout, enableKeepAlive)
         { }
 
+        [SuppressMessage(
+            "Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields",
+            Justification = "Private filed value must be normalized to support UiaDriver")]
         protected override void OnSendingRemoteHttpRequest(SendingRemoteHttpRequestEventArgs eventArgs)
         {
             // setup
             var json = JObject.Parse(eventArgs.RequestBody);
             var filed = eventArgs.GetType().GetField("requestBody", BindingFlags.Instance | BindingFlags.NonPublic);
-            
-            // clean capabilites
+
+            // clean capabilities
             json.Remove("capabilities");
             filed.SetValue(eventArgs, $"{json}");
 
