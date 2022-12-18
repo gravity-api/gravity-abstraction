@@ -3,7 +3,6 @@ using Gravity.Abstraction.WebDriver;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 
 using System.Net.Http;

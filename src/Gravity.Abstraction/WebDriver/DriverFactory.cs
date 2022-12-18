@@ -28,6 +28,8 @@ using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using OpenQA.Selenium.Uia;
 using Gravity.Abstraction.Uia;
+using System.Net.Http;
+using System.Text;
 
 namespace Gravity.Abstraction.WebDriver
 {
@@ -94,9 +96,9 @@ namespace Gravity.Abstraction.WebDriver
             }
             catch (Exception e)
             {
-
+                Trace.TraceError($"{e.GetBaseException()}");
                 throw;
-            }            
+            }
         }
         #endregion
 
@@ -210,7 +212,7 @@ namespace Gravity.Abstraction.WebDriver
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Used by reflection.")]
         private IWebDriver GetRemoteIos(string driverBinaries)
         {
-            return GetMobile<AppiumOptions, AppiumOptionsParams, IOSDriver<IWebElement>>(driverBinaries, "iOS");
+            return GetMobile<AppiumOptions, AppiumOptionsParams, IOSDriver<IWebElement>>(driverBinaries, string.Empty);
         }
 
         [DriverMethod(Driver = Driver.Safari, RemoteDriver = true)]
@@ -229,12 +231,64 @@ namespace Gravity.Abstraction.WebDriver
             var capabilities = GetCapabilities(options, _capabilities);
             options.BrowserVersion = string.IsNullOrEmpty(options.BrowserVersion) ? "1.0" : options.BrowserVersion;
 
-
             // factor web driver
             var executor = _commandTimeout == 0
                 ? new UiaCommandExecutor(new Uri(driverBinaries), TimeSpan.FromSeconds(60))
                 : new UiaCommandExecutor(new Uri(driverBinaries), TimeSpan.FromSeconds(_commandTimeout));
             return new UiaDriver(executor, capabilities);
+        }
+
+        [DriverMethod(Driver = "RemoteWebDriver", RemoteDriver = true)]
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Used by reflection.")]
+        private IWebDriver GetRemoteUiaDriver(string driverBinaries)
+        {
+            // setup
+            var capabilities = new CapabilitiesModel
+            {
+                DesiredCapabilities = _capabilities,
+                Capabilities = new()
+                {
+                    FirstMatch = new[]
+                    {
+                        _capabilities
+                    }
+                }
+            };
+
+            // build
+            using var client = new HttpClient();
+            var requestBody = JsonSerializer.Serialize(capabilities, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+            var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{driverBinaries}/session")
+            {
+                Content = content
+            };
+
+            // invoke
+            var response = client.SendAsync(request).Result;
+
+            // internal server error
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new WebDriverException(response.ReasonPhrase);
+            }
+
+            // extract id
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            var responseObject = JsonSerializer.Deserialize<IDictionary<string, object>>(responseContent);
+            var sessionId = ((JsonElement)responseObject["value"]).GetProperty("sessionId").GetString();
+
+            // setup: get information to initialize driver two
+            var addressOfRemoteServer = new Uri(driverBinaries);
+            var timeout = TimeSpan.FromSeconds(60);
+            var commandExecutor = new LocalExecutor(sessionId, addressOfRemoteServer, timeout);
+            var localCapabilities = new Dictionary<string, object>(_capabilities);
+
+            // get
+            return new RemoteWebDriver(commandExecutor, new DesiredCapabilities(localCapabilities));
         }
         #endregion
 
@@ -291,14 +345,14 @@ namespace Gravity.Abstraction.WebDriver
             where TParams : DriverOptionsParams, IOptionable<TOptions>
         {
             // parse token
-            var isOptions = this._options.Keys.Count > 0;
+            var isOptions = _options.Keys.Count > 0;
 
             // null validation
             if (!isOptions)
             {
                 return new TOptions
                 {
-                    PlatformName = platformName
+                    PlatformName = string.IsNullOrEmpty(platformName) ? null : platformName
                 };
             }
 
@@ -309,7 +363,7 @@ namespace Gravity.Abstraction.WebDriver
             var options = paramsObj.ToDriverOptions();
             if (!string.IsNullOrEmpty(platformName))
             {
-                options.PlatformName = platformName;
+                options.PlatformName = string.IsNullOrEmpty(platformName) ? null : platformName;
             }
             return options;
         }
