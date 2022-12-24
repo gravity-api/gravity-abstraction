@@ -257,6 +257,7 @@ namespace Gravity.Abstraction.WebDriver
 
             // build
             using var client = new HttpClient();
+            client.DefaultRequestHeaders.Connection.Add("Keep-Alive");
             var requestBody = JsonSerializer.Serialize(capabilities, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase

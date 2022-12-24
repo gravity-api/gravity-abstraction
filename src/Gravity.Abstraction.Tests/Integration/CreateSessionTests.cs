@@ -1,10 +1,19 @@
-﻿using Gravity.Abstraction.Tests.Base;
+﻿using Gravity.Abstraction.Contracts;
+using Gravity.Abstraction.Tests.Base;
+using Gravity.Abstraction.WebDriver;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Service.Options;
+using OpenQA.Selenium.Safari;
 
+using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Gravity.Abstraction.Tests.Integration
 {
@@ -64,18 +73,6 @@ namespace Gravity.Abstraction.Tests.Integration
             // execute
             var actual = CreateRemoteDriver(
                 onDriver: "MicrosoftWebDriver",
-                onTest: MethodBase.GetCurrentMethod().Name,
-                onContext: TestContext);
-
-            // assertion
-            Assert.IsTrue(condition: actual);
-        }
-
-        public void CreateRemoteUia()
-        {
-            // execute
-            var actual = CreateRemoteDriver(
-                onDriver: "UiaDriver",
                 onTest: MethodBase.GetCurrentMethod().Name,
                 onContext: TestContext);
 
