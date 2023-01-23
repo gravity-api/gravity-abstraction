@@ -79,5 +79,68 @@ namespace Gravity.Abstraction.Tests.Integration
             // assertion
             Assert.IsTrue(condition: actual);
         }
+
+        //[TestMethod]
+        public void CreateRemoteUia()
+        {
+            // execute
+            var actual = CreateRemoteDriver(
+                onDriver: "UiaDriver",
+                onTest: MethodBase.GetCurrentMethod().Name,
+                onContext: TestContext);
+
+            // assertion
+            //Assert.IsTrue(condition: actual);
+        }
+
+        //[TestMethod]
+        public void CreateRemoteSafariMobile()
+        {
+            // execute
+            //var driverParams = new
+            //{
+            //    DriverBinaries = "https://gravityapi1:pyhBifB6z1YxJv53xLip@hub-cloud.browserstack.com/wd/hub",
+            //    Driver = "RemoteWebDriver",
+            //    Capabilities = new Dictionary<string, object>
+            //    {
+            //        ["bstack:options"] = new Dictionary<string, object>
+            //        {
+            //            ["os"] = "Windows",
+            //            ["osVersion"] = "10",
+            //            ["browserName"] = "chrome",
+            //            ["local"] = "false",
+            //            ["userName"] = "gravityapi1",
+            //            ["accessKey"] = "pyhBifB6z1YxJv53xLip"
+            //        }
+            //    }
+            //};
+            var driverParams = new
+            {
+                DriverBinaries = "https://gravityapi1:pyhBifB6z1YxJv53xLip@hub-cloud.browserstack.com/wd/hub",
+                Driver = "RemoteWebDriver",
+                Capabilities = new Dictionary<string, object>
+                {
+                    ["bstack:options"] = new Dictionary<string, object>
+                    {
+                        ["osVersion"] = "10.0",
+                        ["deviceName"] = "Samsung Galaxy S20",
+                        ["local"] = "false",
+                        ["userName"] = "gravityapi1",
+                        ["accessKey"] = "pyhBifB6z1YxJv53xLip",
+                        ["browserName"] = "chrome"
+                    }
+                }
+            };
+
+            var factory = new DriverFactory(JsonSerializer.Serialize(driverParams, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }));
+
+            var driver = factory.Create();
+            driver.Url = "http://tbo.jtpstage.com/en-ca/tests/qa-tests-irina/aptitude_test_automation?authToken=nB10V@$Z87du$p@!Rz";
+            driver.Dispose();
+        }
     }
 }
