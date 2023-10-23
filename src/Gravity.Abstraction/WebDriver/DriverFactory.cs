@@ -469,9 +469,179 @@ namespace Gravity.Abstraction.WebDriver
             // add capabilities
             foreach (var item in rawCapabilities)
             {
-                cap[item.Key] = ((JsonElement)item.Value).GetRawText();
+                var value = (JsonElement)item.Value;
+                if(value.ValueKind != JsonValueKind.Object)
+                {
+                    cap[item.Key] = value.GetRawText();
+                }
+                else
+                {
+                    var json = JsonSerializer.Serialize(value);
+                    var dictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                    cap[item.Key] = Disconnect(dictionary);
+                }
             }
             return options;
         }
+
+        #region *** Context   ***
+        public static IDictionary<string, object> Disconnect(IDictionary<string, object> obj)
+        {
+            // setup
+            var context = new Dictionary<string, object>();
+
+            // iterate
+            foreach (var key in obj.Keys)
+            {
+                if (string.IsNullOrEmpty(key))
+                {
+                    continue;
+                }
+                var item = Disconnect(key, obj[key]);
+                context[item.Key] = item.Value;
+            }
+
+            // get
+            return context;
+        }
+
+        private static KeyValuePair<string, object> Disconnect(string key, object value)
+        {
+            // setup
+            var type = value.GetType();
+
+            // string
+            if (value is string)
+            {
+                return new KeyValuePair<string, object>(key, $"{value}");
+            }
+
+            // date & time
+            if (value is DateTime dateTime)
+            {
+                return new KeyValuePair<string, object>(key, dateTime);
+            }
+            if (value is TimeSpan timeSpan)
+            {
+                return new KeyValuePair<string, object>(key, timeSpan);
+            }
+
+            // nested
+            if (value is IDictionary<string, object> dictionary)
+            {
+                return new KeyValuePair<string, object>(key, Disconnect(dictionary));
+            }
+
+            // TODO: add handler for JsonElement && JsonToken
+            if(type == typeof(JsonElement))
+            {
+                var jsonElement = (JsonElement)value;
+                switch (jsonElement.ValueKind)
+                {
+                    case JsonValueKind.String:
+                        {
+                            return new KeyValuePair<string, object>(key, jsonElement.GetString());
+                        }
+                    case JsonValueKind.True:
+                    case JsonValueKind.False:
+                        {
+                            return new KeyValuePair<string, object>(key, jsonElement.GetBoolean());
+                        }
+                    case JsonValueKind.Null:
+                    case JsonValueKind.Undefined:
+                        {
+                            return new KeyValuePair<string, object>(key, null);
+                        }
+                    default:
+                        {
+                            return new KeyValuePair<string, object>(key, value);
+                        }
+                }
+            }
+
+            // reference types
+            if (!type.IsPrimitive)
+            {
+                try
+                {
+                    var json = JsonSerializer.Serialize(value);
+                    return new KeyValuePair<string, object>(key, JsonSerializer.Deserialize(json, type));
+                }
+                catch (Exception e) when (e != null)
+                {
+                    return new KeyValuePair<string, object>(key, null);
+                }
+            }
+
+            // primitives
+            if (type == typeof(byte))
+            {
+                return new KeyValuePair<string, object>(key, (byte)value);
+            }
+            if (type == typeof(sbyte))
+            {
+                return new KeyValuePair<string, object>(key, (sbyte)value);
+            }
+            if (type == typeof(short))
+            {
+                return new KeyValuePair<string, object>(key, (short)value);
+            }
+            if (type == typeof(ushort))
+            {
+                return new KeyValuePair<string, object>(key, (ushort)value);
+            }
+            if (type == typeof(int))
+            {
+                return new KeyValuePair<string, object>(key, (int)value);
+            }
+            if (type == typeof(uint))
+            {
+                return new KeyValuePair<string, object>(key, (uint)value);
+            }
+            if (type == typeof(nint))
+            {
+                return new KeyValuePair<string, object>(key, (nint)value);
+            }
+            if (type == typeof(nuint))
+            {
+                return new KeyValuePair<string, object>(key, (nuint)value);
+            }
+            if (type == typeof(long))
+            {
+                return new KeyValuePair<string, object>(key, (long)value);
+            }
+            if (type == typeof(ulong))
+            {
+                return new KeyValuePair<string, object>(key, (ulong)value);
+            }
+            if (type == typeof(float))
+            {
+                return new KeyValuePair<string, object>(key, (float)value);
+            }
+            if (type == typeof(double))
+            {
+                return new KeyValuePair<string, object>(key, (double)value);
+            }
+            if (type == typeof(char))
+            {
+                return new KeyValuePair<string, object>(key, (char)value);
+            }
+            if (type == typeof(decimal))
+            {
+                return new KeyValuePair<string, object>(key, (decimal)value);
+            }
+            if (type == typeof(bool))
+            {
+                return new KeyValuePair<string, object>(key, (bool)value);
+            }
+            if (type == typeof(DateTime))
+            {
+                return new KeyValuePair<string, object>(key, (DateTime)value);
+            }
+
+            // default
+            return new KeyValuePair<string, object>(key, null);
+        }
+        #endregion
     }
 }
