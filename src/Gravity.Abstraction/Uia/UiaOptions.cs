@@ -106,12 +106,12 @@ namespace OpenQA.Selenium.Uia
 
         private void Evaluate()
         {
-            if (string.IsNullOrEmpty(Application))
-            {
-                const string message = "application property cannot " +
-                    "be null or empty, please provide valid application path";
-                throw new FileNotFoundException(message);
-            }
+            //if (string.IsNullOrEmpty(Application))
+            //{
+                //const string message = "application property cannot " +
+                    //"be null or empty, please provide valid application path";
+                //throw new FileNotFoundException(message);
+            //}
         }
     }
 }
